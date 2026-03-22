@@ -26,6 +26,9 @@ jobs:
 
   build-android:
     runs-on: windows-latest
+    strategy:
+      matrix:
+        arch: [ arm64-v8a, x86_64 ]
     steps:
       - uses: actions/checkout@v4
 
@@ -37,11 +40,11 @@ jobs:
 
       - name: Build for Android (SO)
         run: |
-          xmake f -p android -a arm64-v8a -m release -v -y
+          xmake f -p android -a ${{ matrix.arch }} -m release -v -y
           xmake
 
       - name: Upload SO
         uses: actions/upload-artifact@v4
         with:
-          name: android
-          path: build/android/arm64-v8a/release/*.so
+          name: android-${{ matrix.arch }}
+          path: build/android/${{ matrix.arch }}/release/*.so
