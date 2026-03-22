@@ -25,7 +25,7 @@ extern "C" int __wrap_getpagesize() { return sysconf(_SC_PAGESIZE); }
 
 #endif
 
-#if __arm__ || __aarch64__
+#if __arm__ || __aarch64__ || __x86_64__
 #include "jni.h"
 #include <android/log.h>
 
@@ -96,6 +96,7 @@ std::string GetModsFilesPath(JNIEnv *env) {
           package_name / "mods");
 }
 
+#if __arm__ || __aarch64__
 SKY_AUTO_STATIC_HOOK(
     Hook1, memory::HookPriority::Normal,
     std::initializer_list<const char *>(
@@ -106,6 +107,7 @@ SKY_AUTO_STATIC_HOOK(
   vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_4);
   return origin(_this, vm);
 }
+#endif
 
 #endif
 
@@ -135,8 +137,12 @@ public:
       "? ? ? A9 ? ? ? A9 ? ? ? A9 ? ? ? A9 ? ? ? A9 ? ? ? A9 FD 03 00 91 ? ? ? D1 ? ? ? D5 FA 03 00 AA F6 03 07 AA" \
   })                                                                                                                    \
 
-#elif _WIN32
+#elif __x86_64__ && !_WIN32
+// x86_64 Android patterns are not yet known; hooks will not be installed
+#define OREUI_PATTERN                                                          \
+  std::initializer_list<const char *>({""})
 
+#elif _WIN32
 #include <shlobj.h>
 #include <string>
 #include <vector>
